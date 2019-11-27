@@ -53,7 +53,6 @@ export default class JupyterCon {
 
     // Keep track of properties for debugging
     this.kernel = null
-    this.manager = null
   }
 
   /**
@@ -94,12 +93,8 @@ export default class JupyterCon {
     } catch (err) {
       console.log('Looks like the kernel died:', err.toString())
       console.log('Starting a new kernel...')
-
       const kernel = await this.startKernel()
       this.kernel = kernel
-
-      this.manager.setKernel(kernel)
-      this.manager.generateWidgets()
     } finally {
       setTimeout(this._kernelHeartbeat, seconds_between_check * 1000)
     }
