@@ -2,28 +2,27 @@ import debounce from 'lodash.debounce'
 
 import { Kernel, ServerConnection } from '@jupyterlab/services'
 
-import { WidgetManager } from './manager'
 import * as util from './util.js'
 import BinderHub from './BinderHub'
 
 const DEFAULT_BASE_URL = 'https://mybinder.org'
 const DEFAULT_PROVIDER = 'gh'
-const DEFAULT_SPEC = 'SamLau95/nbinteract-image/master'
+const DEFAULT_SPEC = 'oeway/imjoy-binder-image/master'
 
 /**
- * Main entry point for nbinteract.
+ * Main entry point for JupyterCon.
  *
  * Class that runs notebook code and creates widgets.
  */
-export default class NbInteract {
+export default class JupyterCon {
   /**
-   * Initialize NbInteract. Does not start kernel until run() is called.
+   * Initialize JupyterCon. Does not start kernel until run() is called.
    *
-   * @param {Object} [config] - Configuration for NbInteract
+   * @param {Object} [config] - Configuration for JupyterCon
    *
    * @param {String} [config.spec] - BinderHub spec for Jupyter image. Must be
    *     in the format: `${username}/${repo}/${branch}`. Defaults to
-   *     'SamLau95/nbinteract-image/master'.
+   *     'oeway/imjoy-binder-image/master'.
    *
    * @param {String} [config.baseUrl] - Binder URL to start server. Defaults to
    *     https://mybinder.org.
@@ -32,7 +31,7 @@ export default class NbInteract {
    *     for GitHub.
    *
    * @param {String} [config.nbUrl] - Full URL of a running notebook server.
-   *     If set, NbInteract ignores all Binder config and will directly request
+   *     If set, JupyterCon ignores all Binder config and will directly request
    *     Python kernels from the notebook server.
    *
    *     Defaults to `false`; by default we use Binder to start a notebook
@@ -58,62 +57,10 @@ export default class NbInteract {
   }
 
   /**
-   * Attaches event listeners to page that call run() when clicked. Updates
-   * status text of elements as server is started until widget is rendered.
-   * When widgets are rendered, removes all status elements.
-   *
-   * If a running kernel is cached in localStorage, creates widgets without
-   * needing button click.
-   */
-  async prepare() {
-    // The widget buttons show loading indicator text by default. At this
-    // point, nbinteract is ready to run so we change the button text to match.
-    util.setButtonsStatus('Show Widgets')
-
-    this.binder.registerCallback('failed', (oldState, newState, data) => {
-      util.setButtonsError(
-        `Error, try refreshing the page:<br>${data.message}`,
-      )
-    })
-
-    util.statusButtons().forEach(button => {
-      button.addEventListener('click', e => {
-        this.run()
-      })
-    })
-
-    this.runIfKernelExists()
-  }
-
-  /**
    * Starts kernel if needed, runs code on page, and initializes widgets.
    */
   async run() {
-    // The logic to remove the status buttons is temporarily in
-    // manager.js:_displayWidget since it's tricky to implement here.
-    // TODO(sam): Move the logic here instead.
-    util.setButtonsStatus('Initializing widgets...')
-
-    // Normally, we wait until one widget displays before removing the show
-    // widget buttons. However, if there are no widgets on the page, we should
-    // just remove all buttons since the top level button is generated
-    // regardless of whether the page contains widgets.
-    if (util.codeCells().length === 0) {
-      util.removeButtons()
-    }
-
-    const firstRun = !this.kernel || !this.manager
-    try {
-      this.kernel = await this._getOrStartKernel()
-      this.manager = this.manager || new WidgetManager(this.kernel)
-      this.manager.generateWidgets()
-
-      if (firstRun) this._kernelHeartbeat()
-    } catch (err) {
-      debugger
-      console.log('Error in widget initialization :(')
-      throw err
-    }
+    throw "This version of JupyterCon has been modified."
   }
 
   /**
@@ -121,7 +68,7 @@ export default class NbInteract {
    */
   async runIfKernelExists() {
     try {
-      await this._getKernelModel()
+      await this.getKernelModel()
     } catch (err) {
       console.log(
         'No kernel, stopping the runIfKernelExists() call. Use the',
@@ -143,12 +90,12 @@ export default class NbInteract {
    */
   async _kernelHeartbeat(seconds_between_check = 5) {
     try {
-      await this._getKernelModel()
+      await this.getKernelModel()
     } catch (err) {
       console.log('Looks like the kernel died:', err.toString())
       console.log('Starting a new kernel...')
 
-      const kernel = await this._startKernel()
+      const kernel = await this.startKernel()
       this.kernel = kernel
 
       this.manager.setKernel(kernel)
@@ -166,13 +113,13 @@ export default class NbInteract {
    * localStorage. Future calls will attempt to use the cached info, falling
    * back to starting a new server and kernel.
    */
-  async _getOrStartKernel() {
+  async getOrStartKernel() {
     if (this.kernel) {
       return this.kernel
     }
 
     try {
-      const kernel = await this._getKernel()
+      const kernel = await this.getKernel()
       console.log('Connected to cached kernel.')
       return kernel
     } catch (err) {
@@ -180,7 +127,7 @@ export default class NbInteract {
         'No cached kernel, starting kernel on BinderHub:',
         err.toString(),
       )
-      const kernel = await this._startKernel()
+      const kernel = await this.startKernel()
       return kernel
     }
   }
@@ -189,8 +136,8 @@ export default class NbInteract {
    * Connects to kernel using cached info from localStorage. Throws exception
    * if kernel connection fails for any reason.
    */
-  async _getKernel() {
-    const { serverSettings, kernelModel } = await this._getKernelModel()
+  async getKernel() {
+    const { serverSettings, kernelModel } = await this.getKernelModel()
     return await Kernel.connectTo(kernelModel, serverSettings)
   }
 
@@ -198,7 +145,7 @@ export default class NbInteract {
    * Retrieves kernel model using cached info from localStorage. Throws
    * exception if kernel doesn't exist.
    */
-  async _getKernelModel() {
+  async getKernelModel() {
     const { serverParams, kernelId } = localStorage
     const { url, token } = JSON.parse(serverParams)
 
@@ -212,20 +159,28 @@ export default class NbInteract {
     return { serverSettings, kernelModel }
   }
 
+  async startServer(){
+    const { url, token } = await this.binder.startServer()
+    // Connect to the notebook webserver.
+    const serverSettings = ServerConnection.makeSettings({
+      baseUrl: url,
+      wsUrl: util.baseToWsUrl(url),
+      token: token,
+    })
+    localStorage.serverParams = JSON.stringify({ url, token })
+    return serverSettings
+  }
+
   /**
    * Starts a new kernel using Binder and returns the connected kernel. Stores
    * localStorage.serverParams and localStorage.kernelId .
    */
-  async _startKernel() {
+  async startKernel(serverSettings) {
     try {
-      const { url, token } = await this.binder.startServer()
-
-      // Connect to the notebook webserver.
-      const serverSettings = ServerConnection.makeSettings({
-        baseUrl: url,
-        wsUrl: util.baseToWsUrl(url),
-        token: token,
-      })
+  
+      if(!serverSettings){
+        serverSettings = this.startServer()
+      }
 
       // Start a kernel
       const kernelSpecs = await Kernel.getSpecs(serverSettings)
@@ -235,7 +190,6 @@ export default class NbInteract {
       })
 
       // Store the params in localStorage for later use
-      localStorage.serverParams = JSON.stringify({ url, token })
       localStorage.kernelId = kernel.id
 
       console.log('Started kernel:', kernel.id)
@@ -247,8 +201,8 @@ export default class NbInteract {
     }
   }
 
-  async _killKernel() {
-    const kernel = await this._getKernel()
+  async killKernel() {
+    const kernel = await this.getKernel()
     return kernel.shutdown()
   }
 }

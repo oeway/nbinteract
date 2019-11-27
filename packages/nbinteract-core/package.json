@@ -33,14 +33,7 @@
   },
   "homepage": "https://github.com/SamLau95/nb-interact#readme",
   "dependencies": {
-    "@jupyter-widgets/base": "^1.1.8",
-    "@jupyter-widgets/controls": "^1.1.5",
-    "@jupyter-widgets/html-manager": "^0.11.9",
-    "@jupyter-widgets/output": "^1.0.15",
-    "@jupyterlab/services": "^1.1.2",
-    "bqplot": "0.3.0",
-    "font-awesome": "^4.7.0",
-    "lodash.once": "^4.1.1"
+    "@jupyterlab/services": "^1.1.2"
   },
   "devDependencies": {
     "lodash.debounce": "^4.0.8",

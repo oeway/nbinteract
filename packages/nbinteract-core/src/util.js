@@ -36,35 +36,6 @@ export const isWidgetCell = cell =>
 export const cellToWidgetOutput = cell =>
   cell.querySelector('.output_widget_view')
 
-/**
- * Functions to work with nbinteract status buttons
- * Keep CSS class in sync with nbinteract/templates/*.tpl
- */
-export const statusButtons = (cell = document) =>
-  cell.querySelectorAll('.js-nbinteract-widget')
-
-export const setButtonsStatus = (message, cell = document) => {
-  statusButtons(cell).forEach(button => {
-    button.innerHTML = message
-  })
-}
-
-export const setButtonsError = (message, cell = document) => {
-  statusButtons(cell).forEach(button => {
-    button.disabled = true
-
-    const error = document.createElement('pre')
-    error.innerText = message
-    error.style.cssText = 'text-align: left; font-size: 0.9em;'
-
-    button.innerHTML = ''
-    button.appendChild(error)
-  })
-}
-
-export const removeButtons = (cell = document) => {
-  statusButtons(cell).forEach(button => button.remove())
-}
 
 /**
  * Functions to work with kernel messages

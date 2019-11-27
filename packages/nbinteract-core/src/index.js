@@ -1,11 +1,10 @@
 import '@babel/polyfill'
-import './bqplot.css'
 
-import NbInteract from './NbInteract'
+import JupyterCon from './JupyterCon'
 
 // Define globally for use in browser.
 if (typeof window !== 'undefined') {
-  window.NbInteract = NbInteract
+  window.JupyterCon = JupyterCon
 }
 
-export default NbInteract
+export default JupyterCon

@@ -146,6 +146,15 @@ yarn install
 make -j2 serve
 ```
 
+### Build nbinteract
+
+```
+cd nbinteract
+npm install
+npx lerna  run build --stream
+```
+Once built, the library will be located at `packages/nbinteract-core/lib`
+
 ## Feedback
 
 If you have any questions or comments, send us a message on the
